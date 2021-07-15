@@ -357,7 +357,7 @@ Try
 
     #### SAFEB9INSTALLER ####
     # Extract the SafeB9Installer archive to 'SafeB9Installer'
-    Expand-Archive -Path "SafeB9SInstaller-*.zip" -DestinationPath "SafeB9Installer";
+    Get-ChildItem -Filter "SafeB9SInstaller-*.zip" | Expand-Archive -DestinationPath "SafeB9Installer";
 
     # Move the SafeB9Installer.bin to the root of the sd card
     Move-Item -Path "SafeB9Installer/SafeB9Installer.bin" -Destination ".";
@@ -373,7 +373,7 @@ Try
     New-Item -ItemType Directory -Path "boot9strap";
 
     # Extract the boot9strap archive to the current directory
-    Expand-Archive -Path "boot9strap-?.?.zip" -DestinationPath "b9s";
+    Get-ChildItem -Filter "boot9strap-?.?.zip" | Expand-Archive -DestinationPath "b9s";
 
     # Move the boot9strap.firm and boot9strap.firm.sha files to the boot9strap folder
     Move-Item -Path "b9s/boot9strap.firm*" -Destination "boot9strap";
@@ -386,7 +386,7 @@ Try
 
     #### Luma3DS ####
     # Expand the Luma3DS archive to 'Luma3DS'
-    Expand-Archive -Path "Luma3DSv*.zip" -DestinationPath "Luma3DS";
+    Get-ChildItem -Filter "Luma3DSv*.zip" | Expand-Archive -DestinationPath "Luma3DS";
 
     # Move the boot.firm and boot.3dsx files to the luma3ds folder to sd root
     Move-Item -Path "Luma3DS/boot.*" -Destination ".";
@@ -449,7 +449,7 @@ Try
     New-Item -ItemType Directory -Path "luma/payloads";
 
     # Extract the GodMode9 archive to 'GodMode9'
-    Expand-Archive -Path "GodMode9-v*" -DestinationPath "GodMode9";
+    Get-ChildItem -Filter "GodMode9-v*" | Expand-Archive -DestinationPath "GodMode9";
 
     # Move the GodMode9.firm file to /luma/payloads
     Move-Item -Path "GodMode9/GodMode9.firm" -Destination "luma/payloads";
