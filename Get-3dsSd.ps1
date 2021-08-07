@@ -67,6 +67,8 @@ Function Get-GithubRelease
       Throw "Request Response: Not Found. Repository does not exist or does not have any releases.";
     }
 
+    Write-Host $Request | Format-List | Out-String;
+
     # Loop over the assets
     Foreach($Asset in $Request.Assets)
     {
@@ -108,18 +110,8 @@ Function Format-Fat32Native
 
   Try
   {
-    # Clear the terminal errors
-    $Error.Clear();
-
     # Run the native format on the drive letter
     Format /FS:FAT32 /Q /X "$($DriveLetter):";
-
-    # If an error is reported after the script
-    If ($Error.Count -Gt 0)
-    {
-      # Throw the error code to the calling process
-      Throw "Program Reported Error Code: $LastErrorCode";
-    }
   }
   Catch
   {
@@ -139,31 +131,43 @@ Function Format-Fat32Ridgecrop
 
   Try
   {
+    # Get the current location
+    $Location = Get-Location;
+
+    # Move to the program path
+    Set-Location $ProgramPath;
+
+    # If the redist folder does not exist
+    If (-Not (Test-Path "redist"))
+    {
+      # Make a new redist folder
+      New-Item -ItemType Directory -Path "redist";
+    }
+
+    # Enter the redist folder
+    Set-Location "redist";
+
     # Check to see if we already have the file
-    If (-Not (Test-Path "$ProgramPath\fat32format.exe"))
+    If (-Not (Test-Path "$fat32format.exe"))
     {
       # Output path for the archive
-      $Archive = "$ProgramPath/fat32format.zip";
+      $Archive = "$fat32format.zip";
 
       # Download Ridgecrop fat32format.zip
       Invoke-WebRequest -Uri "http://ridgecrop.co.uk/download/fat32format.zip" -OutFile $Archive;
 
       # Extract the archive to fat32format.exe in the same location as the script
-      Expand-Archive -Path $Archive -DestinationPath $ProgramPath;
-    }
+      Expand-Archive -Path $Archive (Get-Location);
 
-    # Clear the terminal errors
-    $Error.Clear();
+      # Delete the archive, it is no longer needed
+      Remove-Item $Archive -Force;
+    }
 
     # Run the Ridgecrop format tool on the sd card
-    & "$ProgramPath\fat32format.exe $($DriveLetter):";
+    & "fat32format.exe" "$($DriveLetter):";
 
-    # If an error is reported after the script
-    If ($Error.Count -Gt 0)
-    {
-      # Throw the error code to the calling process
-      Throw "Program Reported Error Code: $LastErrorCode";
-    }
+    # Move back to our previous location
+    Set-Location $Location;
   }
   Catch
   {
@@ -271,18 +275,22 @@ Try
         Read-Host "Press enter to continue.";
       }
 
-      # If force switch is NOT selected
-      If (-Not $Force)
+      # If no method is provided 
+      If (-Not $Method)
       {
-        Write-Host "Please select an option:";
-        Write-Host "1: Native Windows Format (slow, native)";
-        Write-Host "2: Ridgecrop Format Tool (fast, proprietary)";
-        $Method = Read-Host "Enter Selection";
-      }
-      Else
-      {
-        # Default to windows method
-        $Method = 1;
+        # If force switch is NOT selected
+        If (-Not $Force)
+        {
+          Write-Host "Please select an option:";
+          Write-Host "1: Native Windows Format (slow, native)";
+          Write-Host "2: Ridgecrop Format Tool (fast, proprietary)";
+          $Method = Read-Host "Enter Selection";
+        }
+        Else
+        {
+          # Default to windows method
+          $Method = 1;
+        }
       }
 
       Write-Host "Starting format.";
